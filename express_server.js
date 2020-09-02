@@ -3,7 +3,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
-var cookieParser = require('cookie-parser')
+var cookieParser = require('cookie-parser');
+const e = require("express");
 app.use(cookieParser())
 
 
@@ -101,13 +102,27 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 })
 // *** Login endpoint for login of the cookie and username and send usercookie
 app.post("/login", (req, res) => {
-  let user_id = req.cookies.user_id;
-    res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    res.status(403).send("Fields must be filled out");
+  } else if (findEmail(email, users)) {
+    if (findEmail(email, users).password === password){
+      res.cookie("user_id", findEmail(email,users).id)
+      res.redirect('/urls')
+    } else {
+      res.status(403).send("Incorrect password")
+    } 
+  } else {
+    res.status(403).send("Please register first")
+  }
+ 
 })
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
-  res.redirect("/urls");
+  res.redirect("/login");
 })
 app.get("/login", (req,res) => {
   res.render("login")
@@ -130,7 +145,6 @@ app.post("/register", (req, res) => {
   } else {
     const user = {id: userRandomID, email:req.body.email, password:req.body.password}
     users[userRandomID] = user
-    console.log(users)
   res.redirect("/urls")
   }
 })

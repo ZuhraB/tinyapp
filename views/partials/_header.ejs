@@ -12,10 +12,7 @@
     </div>
      
     <% if (!user) { %>
-      <p><form method="POST" action="/login">
-        <input type="email" name="email" placeholder="Please enter email"/>
-	      <input type="password" name="password" placeholder="Please enter your password"/>
-        </form></p>
+      <p> <a href="/register">Register</a> | <a href="/login">Login</a> </p>
   <% } else { %>
     Longed in as   <%=  user.email %>!
     <p><form method="POST" action="/logout">
