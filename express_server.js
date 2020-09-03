@@ -11,8 +11,8 @@ app.use(cookieParser())
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 let users = { 
   "userRandomID": {
@@ -63,22 +63,29 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
 
 })
-//sending user data and others to urls/new
+//sending user data and others to urls/new/only registerd or loged in can access
 app.get("/urls/new", (req, res) => {
-  let user_id = req.cookies.user_id;
+  const user_id = req.cookies.user_id;
+  if (!user_id) {
+    res.redirect("/login")
+  } else {
   let templateVars = {
     user: users[user_id],
     urls: urlDatabase
-};
-  res.render("urls_new", templateVars);
+  }
+    res.render("urls_new", templateVars)
+}
 });
 app.post("/urls", (req, res) => {
-  shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL
-  res.redirect(`/urls/${shortURL}`)  
+  let shortURL = generateRandomString();
+  let longURL = req.body.longURL
+  console.log(longURL)
+  urlDatabase[shortURL] = { longURL: longURL, userID: req.cookies.user_id}
+  res.redirect('/urls')  
 });
 app.get("/u/:shortURL", (req, res) => {
-   const longURL = urlDatabase[req.params.shortURL]
+   const longURL = urlDatabase[req.params.shortURL].longURL
+   console.log(longURL)
   res.redirect(longURL);
 });   //renders to urls_show and sending user object  
 app.get("/urls/:shortURL", (req, res) => {
@@ -104,7 +111,6 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-
   if (!email || !password) {
     res.status(403).send("Fields must be filled out");
   } else if (findEmail(email, users)) {
@@ -119,7 +125,6 @@ app.post("/login", (req, res) => {
   }
  
 })
-
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
   res.redirect("/login");
