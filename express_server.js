@@ -1,18 +1,26 @@
+// ----All requires----
 const express = require("express");
+const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080; // default port 8080
+let cookieSession = require('cookie-session')
+const { getUserByEmail } = require('./helpers')
+  
+
+//----All app.use-----
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ["done"],
+  maxAge: 24 * 60 * 60 * 1000 
+}))
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
-var cookieParser = require('cookie-parser');
 const e = require("express");
-app.use(cookieParser())
-
-const bcrypt = require('bcrypt');
-const password = "purple-monkey-dinosaur"; // found in the req.params object
-
-
+//----app.set---
 app.set("view engine", "ejs");
 
+//---- Data bases---
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "userRandomID" }
@@ -29,14 +37,8 @@ let users = {
     password: "dishwasher-funk"
   }
 }
-const findEmail = function(email, users) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user]
-    }
-  }
-  return false;
-}
+// ------helper functions------
+
 const urlsForUser = function(id, urlDatabase) {
   const userURLS = {};
   for (let shortURL in urlDatabase) {
@@ -68,7 +70,7 @@ app.get("/hello", (req, res) => {
 });
 // sends data only to the client who loged in and created the tiny url.
 app.get("/urls", (req, res) => {
-  let user_id = req.cookies.user_id;
+  let user_id = req.session.user_id
   if (!user_id) {
     res.redirect("/login")
   } else {
@@ -78,7 +80,7 @@ app.get("/urls", (req, res) => {
 })
 //sending user data and others to urls/new/only registerd or loged in can access
 app.get("/urls/new", (req, res) => {
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id
   if (!user_id) {
     res.redirect("/login")
   } else {
@@ -93,7 +95,7 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   let longURL = req.body.longURL
   console.log(longURL)
-  urlDatabase[shortURL] = { longURL: longURL, userID: req.cookies.user_id}
+  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id}
   res.redirect('/urls')  
 });
 app.get("/u/:shortURL", (req, res) => {
@@ -102,7 +104,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });   //renders to urls_show and sending user object  
 app.get("/urls/:shortURL", (req, res) => {
-  let user_id = req.cookies.user_id;
+  let user_id = req.session.user_id
   let shortURL = req.params.shortURL;
   if (user_id && user_id === urlDatabase[shortURL].userID) {
   let templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user : users[user_id],};
@@ -113,7 +115,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 // delets the short urls
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id
   if (urlsForUser(user_id, urlDatabase)) {
     let shortURL = req.params.shortURL;
     delete urlDatabase[shortURL];
@@ -124,7 +126,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 })
 // edits the longURLS
 app.post("/urls/:shortURL/edit", (req, res) => {
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id
   if (urlsForUser(user_id, urlDatabase)) {
     let shortURL = req.params.shortURL;
     let longURL = req.body.editedUrl;
@@ -140,10 +142,10 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   if (!email || !password) {
     res.status(403).send("Fields must be filled out");
-  } else if (findEmail(email, users)) {
-    let user = findEmail(email, users)
+  } else if (getUserByEmail(email, users)) {
+    let user = getUserByEmail(email, users)
     if (bcrypt.compareSync(password, user.password)) {
-      res.cookie("user_id", user.id)
+      req.session.user_id =  user.id
       res.redirect('/urls')
     } else {
       res.status(403).send("Incorrect password")
@@ -153,7 +155,7 @@ app.post("/login", (req, res) => {
   }
 })
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id")
+  req.session = null;
   res.redirect("/login");
 })
 app.get("/login", (req,res) => {
@@ -168,12 +170,12 @@ app.get("/register", (req, res) => {
 })
 app.post("/register", (req, res) => {
   const userRandomID = generateRandomString()
-  res.cookie("user_id", userRandomID);
+  req.session.user_id =  userRandomID;
   const email = req.body.email;
   const password = req.body.password
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  if (email === "" || password === "" || findEmail(email, users)) {
+  if (email === "" || password === "" || getUserByEmail(email, users)) {
     res.statusCode = 400;
     res.status(400).send("Please enter a valid email")
   } else {
