@@ -11,8 +11,8 @@ app.use(cookieParser())
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "userRandomID" }
 };
 let users = { 
   "userRandomID": {
@@ -34,6 +34,15 @@ const findEmail = function(email, users) {
   }
   return false;
 }
+const urlsForUser = function(id, urlDatabase) {
+  const userURLS = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userURLS[shortURL] = urlDatabase[shortURL]
+    }
+  }
+  return userURLS;
+}
 
 const generateRandomString = function() {
   let str = '';
@@ -54,14 +63,15 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+// sends data only to the client who loged in and created the tiny url.
 app.get("/urls", (req, res) => {
   let user_id = req.cookies.user_id;
-    let templateVars = {
-        user: users[user_id],
-        urls: urlDatabase
-    };
+  if (!user_id) {
+    res.redirect("/login")
+  } else {
+    let templateVars = {urls: urlsForUser(user_id, urlDatabase), user: users[user_id]}
     res.render("urls_index", templateVars);
-
+  } 
 })
 //sending user data and others to urls/new/only registerd or loged in can access
 app.get("/urls/new", (req, res) => {
@@ -91,21 +101,35 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let user_id = req.cookies.user_id;
   let shortURL = req.params.shortURL;
-  let templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], user : users[user_id]};
+  if (user_id && user_id === urlDatabase[shortURL].userID) {
+  let templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user : users[user_id],};
   res.render("urls_show", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 // delets the short urls
 app.post("/urls/:shortURL/delete", (req, res) => {
-  let shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls")
+  const user_id = req.cookies.user_id;
+  if (urlsForUser(user_id, urlDatabase)) {
+    let shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    res.redirect("/urls")
+  } else {
+    res.send("Your are not allowed to delet this page!")
+  }
 })
 // edits the longURLS
 app.post("/urls/:shortURL/edit", (req, res) => {
-  let shortURL = req.params.shortURL;
-  let longURL = req.body.editedUrl;
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls")
+  const user_id = req.cookies.user_id;
+  if (urlsForUser(user_id, urlDatabase)) {
+    let shortURL = req.params.shortURL;
+    let longURL = req.body.editedUrl;
+    urlDatabase[shortURL] = longURL;
+    res.redirect("/urls")
+  } else {
+    res.send("Action not allowed!")
+  }
 })
 // *** Login endpoint for login of the cookie and username and send usercookie
 app.post("/login", (req, res) => {
