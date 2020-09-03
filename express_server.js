@@ -7,6 +7,9 @@ var cookieParser = require('cookie-parser');
 const e = require("express");
 app.use(cookieParser())
 
+const bcrypt = require('bcrypt');
+const password = "purple-monkey-dinosaur"; // found in the req.params object
+
 
 app.set("view engine", "ejs");
 
@@ -138,8 +141,9 @@ app.post("/login", (req, res) => {
   if (!email || !password) {
     res.status(403).send("Fields must be filled out");
   } else if (findEmail(email, users)) {
-    if (findEmail(email, users).password === password){
-      res.cookie("user_id", findEmail(email,users).id)
+    let user = findEmail(email, users)
+    if (bcrypt.compareSync(password, user.password)) {
+      res.cookie("user_id", user.id)
       res.redirect('/urls')
     } else {
       res.status(403).send("Incorrect password")
@@ -147,7 +151,6 @@ app.post("/login", (req, res) => {
   } else {
     res.status(403).send("Please register first")
   }
- 
 })
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
@@ -168,27 +171,17 @@ app.post("/register", (req, res) => {
   res.cookie("user_id", userRandomID);
   const email = req.body.email;
   const password = req.body.password
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
   if (email === "" || password === "" || findEmail(email, users)) {
     res.statusCode = 400;
     res.status(400).send("Please enter a valid email")
   } else {
-    const user = {id: userRandomID, email:req.body.email, password:req.body.password}
+    const user = {id: userRandomID, email:req.body.email, password: hashedPassword}
     users[userRandomID] = user
   res.redirect("/urls")
   }
 })
-
-
-
-
-
-
-
-
-
-
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
