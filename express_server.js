@@ -40,15 +40,8 @@ let users = {
   }
 }
 
-
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
-});
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 //  renders to urls_index 
@@ -60,6 +53,24 @@ app.get("/urls", (req, res) => {
     let templateVars = {urls: urlsForUser(user_id, urlDatabase), user: users[user_id]};
     res.render("urls_index", templateVars); }
 })
+
+app.get("/", (req, res) => {
+  res.redirect("/urls");
+});
+// Registration endpoint for get requests 
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect('/urls');
+});
+// Login endpoint for get requests
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
 // newly created ursl
 app.get("/urls/new", (req, res) => {
   const userID = req.session.user_id;
@@ -123,7 +134,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
     res.send("Action not allowed!");
   }
 })
-//  Login
+//  Login post request
 app.post("/login", (req, res) => {
 
   const {email, password } = req.body
@@ -141,18 +152,9 @@ app.post("/login", (req, res) => {
     res.status(403).send("Please register first");
   }
 });
-app.post("/logout", (req, res) => {
-  req.session = null;
-  res.redirect("/login");
-})
-app.get("/login", (req,res) => {
-  res.render("login")
-})
 
-// Register
-app.get("/register", (req, res) => {
-  res.render("register");
-})
+
+// Register post request
 
 app.post("/register", (req, res) => {
   const userRandomID = generateRandomString();
