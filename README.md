@@ -6,10 +6,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 Bellow see screenshots of the final product,
 Final product allows user to store, shorten, update and delete URLs,
 URLs are only accessible to the creators of the URLs.
- ## Final Product
  
-!["Screenshot of the creat short url page"](https://github.com/ZuhraB/tinyapp/blob/master/docs/Creat-new-URL-page.png?raw=true)
-!["Screenshot of URLs page"](https://github.com/ZuhraB/tinyapp/blob/master/docs/urls-page.png?raw=true)
 
 ## Dependencies
 
@@ -24,3 +21,6 @@ URLs are only accessible to the creators of the URLs.
 
 - Install all dependencies (using the `npm install` command).
 - Run the development web server using the `node express_server.js` command.
+
+!["Screenshot of the creat short url page"](https://github.com/ZuhraB/tinyapp/blob/master/docs/Creat-new-URL-page.png?raw=true)
+!["Screenshot of URLs page"](https://github.com/ZuhraB/tinyapp/blob/master/docs/urls-page.png?raw=true)
