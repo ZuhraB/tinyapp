@@ -6,9 +6,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 Bellow see screenshots of the final product,
 Final product allows user to store, shorten, update and delete URLs,
 URLs are only accessible to the creators of the URLs.
+ ## Final Product
+ 
 
-!["screenshot description"](#)
-!["screenshot description"](#)
 
 ## Dependencies
 
