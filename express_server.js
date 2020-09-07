@@ -5,7 +5,8 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080; 
 let cookieSession = require('cookie-session');
-const { getUserByEmail, urlsForUser, generateRandomString, setLongUrl } = require('./helpers');
+const {urlDatabase , users} = require ('./helpers/constants')
+const { getUserByEmail, urlsForUser, generateRandomString, setLongUrl } = require('./helpers/tahelpers')({urlDatabase, users});
 
 // *** All app.use *** //
 
@@ -21,24 +22,6 @@ const e = require("express");
 // *** app.set *** //
 app.set("view engine", "ejs");
 
-// *** Data bases *** //
-
-const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "userRandomID" }
-};
-let users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
-  },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
-  }
-}
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
