@@ -88,6 +88,7 @@ app.get("/urls/new", (req, res) => {
 // Only registered and the creators of short usrls can visit them
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
+// if "http//" was not added the setLongUrl function will add it at the begging of longURL
   let longURL = setLongUrl(req.body.longURL);
   urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id}
   res.redirect('/urls'); 
