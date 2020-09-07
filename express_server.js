@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080; 
 let cookieSession = require('cookie-session');
-const { getUserByEmail, urlsForUser, generateRandomString } = require('./helpers');
+const { getUserByEmail, urlsForUser, generateRandomString, setLongUrl } = require('./helpers');
 
 // *** All app.use *** //
 
@@ -52,7 +52,7 @@ app.get("/urls", (req, res) => {
   } else {
     let templateVars = {urls: urlsForUser(user_id, urlDatabase), user: users[user_id]};
     res.render("urls_index", templateVars); }
-})
+});
 
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -88,8 +88,8 @@ app.get("/urls/new", (req, res) => {
 // Only registered and the creators of short usrls can visit them
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  let longURL = req.body.longURL;
-  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id};
+  let longURL = setLongUrl(req.body.longURL);
+  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id}
   res.redirect('/urls'); 
 });
 
@@ -102,7 +102,6 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let userID = req.session.user_id;
   const shortURL = req.params.shortURL
-  console.log(urlDatabase)
   if (userID) {
     let templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user : users[userID],};
     res.render("urls_show", templateVars);

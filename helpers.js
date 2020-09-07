@@ -25,5 +25,13 @@ const generateRandomString = function() {
   }
   return str;
 }
+const setLongUrl = function (url) {
+  if (url.match(/^(https:\/\/|http:\/\/)/)) {
+    return url;
+  } else {
+    return  "http://" + url;
+  }
+}
 
-module.exports =  { getUserByEmail, urlsForUser, generateRandomString } ;
+
+module.exports =  { getUserByEmail, urlsForUser, generateRandomString, setLongUrl } ;
