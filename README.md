@@ -24,3 +24,4 @@ URLs are only accessible to the creators of the URLs.
 
 !["Screenshot of the creat short url page"](https://github.com/ZuhraB/tinyapp/blob/master/docs/Creat-new-URL-page.png?raw=true)
 !["Screenshot of URLs page"](https://github.com/ZuhraB/tinyapp/blob/master/docs/urls-page.png?raw=true)
+!["Screenshot of login page"](https://github.com/ZuhraB/tinyapp/blob/master/docs/login-page.png?raw=true)
